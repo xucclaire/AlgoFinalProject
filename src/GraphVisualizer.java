@@ -73,6 +73,32 @@ public class GraphVisualizer extends JPanel {
         nodes.add(new Node("Franklin Garden", 800, 30, true));
         nodes.add(new Node("Fitness Room", 130, 440, true));
         nodes.add(new Node("MS Admin", 187, 920, true));
+        nodes.add(new Node("B1", 610, 595, true));
+        nodes.add(new Node("B2", 630, 589, true));
+        nodes.add(new Node("B3", 650, 583, true));
+        nodes.add(new Node("B4", 670, 577, true));
+        nodes.add(new Node("B5", 690, 571, true));
+        nodes.add(new Node("B6", 710, 567, true));
+        nodes.add(new Node("B7", 760, 561, true));
+        nodes.add(new Node("B8", 780, 55, true));
+        nodes.add(new Node("B9", 790, 550, true));
+        nodes.add(new Node("B10", 610, 595, true));
+        nodes.add(new Node("B11", 610, 595, true));
+        nodes.add(new Node("B12", 610, 595, true));
+        nodes.add(new Node("B13", 610, 595, true));
+        nodes.add(new Node("B14", 610, 595, true));
+        nodes.add(new Node("B15", 610, 595, true));
+        nodes.add(new Node("B16", 610, 595, true));
+        nodes.add(new Node("B17", 610, 595, true));
+        nodes.add(new Node("B18", 610, 595, true));
+        nodes.add(new Node("B19", 610, 595, true));
+        nodes.add(new Node("B20", 610, 595, true));
+        nodes.add(new Node("B21", 610, 595, true));
+        nodes.add(new Node("B22", 610, 595, true));
+        nodes.add(new Node("B23", 610, 595, true));
+        nodes.add(new Node("B24", 610, 595, true));
+
+
 
         addMouseListener(new MouseAdapter() {
             @Override
@@ -106,7 +132,7 @@ public class GraphVisualizer extends JPanel {
             g.setColor(Color.BLUE);
             g.fillOval(node.x - 10, node.y - 10, 20, 20);
             g.setColor(Color.BLACK);
-            g.drawOval(node.x - 10, node.y - 10, 20, 20);
+            g.drawRect(node.x - 10, node.y - 10, 20, 20);
             g.drawString(node.name, node.x + 15, node.y + 5);
         }
     }

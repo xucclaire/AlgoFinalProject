@@ -3,7 +3,7 @@ import java.util.List;
 public class CampusNavigator{
 
     private AdjacencyListGraph graph;
-    private double backpackMultiplier;  // Multiplier for cost when carrying the backpack
+    private double backpackMultiplier;
 
     public CampusNavigator(AdjacencyListGraph graph, double carryingFactor) {
         this.graph = graph;
@@ -129,13 +129,13 @@ public class CampusNavigator{
         fullPath.add(currentPosition);
 
         for (int i = 0; i < schedule.size() - 1; i++) {
-            int segStart = currentPosition.vertex;
-            int segEnd = schedule.get(i + 1).vertex;
+            int segmentStart = currentPosition.vertex;
+            int segmentEnd = schedule.get(i + 1).vertex;
             boolean segStartCarrying = currentPosition.carrying;
             boolean segEndCarrying = schedule.get(i + 1).requiresBackpack;
 
-            if (!segStartCarrying && segEndCarrying && segStart != currentBackpackLocation) {
-                CArrayList<Position> toBackpack = computeOptimalPathSegment(segStart, currentBackpackLocation, false, false);
+            if (!segStartCarrying && segEndCarrying && segmentStart != currentBackpackLocation) {
+                CArrayList<Position> toBackpack = computeOptimalPathSegment(segmentStart, currentBackpackLocation, false, false);
                 if (!toBackpack.isEmpty()) {
                     toBackpack.removeIndex(0);
                     fullPath.addAll(toBackpack);
@@ -150,7 +150,7 @@ public class CampusNavigator{
                 }
             }
 
-            CArrayList<Position> segment = computeOptimalPathSegment(currentPosition.vertex, segEnd, currentPosition.carrying, segEndCarrying);
+            CArrayList<Position> segment = computeOptimalPathSegment(currentPosition.vertex, segmentEnd, currentPosition.carrying, segEndCarrying);
             if (!segment.isEmpty()) {
                 segment.removeIndex(0);
                 fullPath.addAll(segment);
