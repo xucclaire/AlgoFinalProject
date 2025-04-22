@@ -1,0 +1,164 @@
+<!--
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>algo final</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+</head>
+<body>
+<img src="images/GraphVisualizer.jpg" width="400" height="300">
+<p>campus map</p>
+<h1>Hello, world!</h1>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+<form>
+    <div class="mb-3">
+        <label for="exampleInputEmail1" class="form-label">Email address</label>
+        <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
+        <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
+    </div>
+    <div class="mb-3">
+        <label for="exampleInputPassword1" class="form-label">Password</label>
+        <input type="password" class="form-control" id="exampleInputPassword1">
+    </div>
+    <div class="mb-3 form-check">
+        <input type="checkbox" class="form-check-input" id="exampleCheck1">
+        <label class="form-check-label" for="exampleCheck1">Check me out</label>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
+</body>
+</html>
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Clickable Nodes</title>
+    <style>
+        canvas {
+          border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+<canvas id="graphCanvas" width="800" height="600"></canvas>
+
+<script>
+    const canvas = document.getElementById("graphCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const nodes = [
+      { id: 'A', x: 100, y: 100, radius: 20 },
+      { id: 'B', x: 300, y: 200, radius: 20 }
+    ];
+
+    const edges = [
+      { from: 0, to: 1 }
+    ];
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw edges
+      edges.forEach(edge => {
+        const from = nodes[edge.from];
+        const to = nodes[edge.to];
+        ctx.beginPath();
+        ctx.moveTo(from.x, from.y);
+        ctx.lineTo(to.x, to.y);
+        ctx.stroke();
+      });
+
+      // Draw nodes
+      nodes.forEach(node => {
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+        ctx.fillStyle = "skyblue";
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = "black";
+        ctx.fillText(node.id, node.x - 5, node.y + 5);
+      });
+    }
+
+    canvas.addEventListener("click", e => {
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      nodes.forEach(node => {
+        const dx = mouseX - node.x;
+        const dy = mouseY - node.y;
+        if (dx * dx + dy * dy < node.radius * node.radius) {
+          console.log("Clicked node:", node.id);
+          alert(`You clicked on node ${node.id}`);
+        }
+      });
+    });
+
+    draw();
+</script>
+</body>
+</html>
+
+<!--
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML Form to Node.js Backend</title>
+    <script>
+        // Function to handle form submission
+        async function submitForm(event) {
+          event.preventDefault();  // Prevent default form submission
+
+          // Get form data
+          const formData = new FormData(document.getElementById('myForm'));
+          const data = {
+            name: formData.get('name'),
+            email: formData.get('email'),
+          };
+
+          // Send POST request to Node.js backend
+          try {
+            let response = await fetch('http://localhost:3000/submit', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(data),
+            });
+
+            let result = await response.json();  // Parse JSON response from backend
+            alert(result.message);  // Display confirmation message
+
+          } catch (error) {
+            console.error('Error submitting form:', error);
+          }
+        }
+    </script>
+</head>
+<body>
+
+<h1>Contact Form</h1>
+
+ HTML Form -->
+<!--
+<form id="myForm" onsubmit="submitForm(event)">
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" required><br><br>
+
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email" required><br><br>
+
+    <button type="submit">Submit</button>
+</form>
+
+</body>
+</html>
+-->
