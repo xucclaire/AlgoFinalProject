@@ -42,7 +42,6 @@ public class GraphVisualizer extends JPanel {
     public GraphVisualizer(JTextArea clickedNodeDisplay) {
         this.clickedNodeDisplay = clickedNodeDisplay;
         nodes.add(new Node("Portola Road Entrance", 350, 750, true));
-        nodes.add(new Node("Tech Office", 910, 135, true));
         nodes.add(new Node("ARC/Student Center", 750, 312, true));
         nodes.add(new Node("Dining Hall", 750, 250, true));
         nodes.add(new Node("Learning Commons", 935, 295, true));
@@ -72,31 +71,63 @@ public class GraphVisualizer extends JPanel {
         nodes.add(new Node("Faculty Housing", 30, 480, true));
         nodes.add(new Node("Franklin Garden", 800, 30, true));
         nodes.add(new Node("Fitness Room", 130, 440, true));
-        nodes.add(new Node("MS Admin", 187, 920, true));
+
         nodes.add(new Node("B1", 610, 595, true));
-        nodes.add(new Node("B2", 630, 589, true));
-        nodes.add(new Node("B3", 650, 583, true));
-        nodes.add(new Node("B4", 670, 577, true));
-        nodes.add(new Node("B5", 690, 571, true));
-        nodes.add(new Node("B6", 710, 567, true));
-        nodes.add(new Node("B7", 760, 561, true));
-        nodes.add(new Node("B8", 780, 55, true));
+        nodes.add(new Node("B2", 631, 589, true));
+        nodes.add(new Node("B3", 652, 583, true));
+        nodes.add(new Node("B4", 673, 577, true));
+        nodes.add(new Node("B5", 694, 571, true));
+        nodes.add(new Node("B6", 715, 567, true));
+        nodes.add(new Node("B7", 750, 561, true));
+        nodes.add(new Node("B8", 771, 555, true));
         nodes.add(new Node("B9", 790, 550, true));
-        nodes.add(new Node("B10", 610, 595, true));
-        nodes.add(new Node("B11", 610, 595, true));
-        nodes.add(new Node("B12", 610, 595, true));
-        nodes.add(new Node("B13", 610, 595, true));
-        nodes.add(new Node("B14", 610, 595, true));
-        nodes.add(new Node("B15", 610, 595, true));
-        nodes.add(new Node("B16", 610, 595, true));
-        nodes.add(new Node("B17", 610, 595, true));
-        nodes.add(new Node("B18", 610, 595, true));
-        nodes.add(new Node("B19", 610, 595, true));
-        nodes.add(new Node("B20", 610, 595, true));
-        nodes.add(new Node("B21", 610, 595, true));
-        nodes.add(new Node("B22", 610, 595, true));
-        nodes.add(new Node("B23", 610, 595, true));
-        nodes.add(new Node("B24", 610, 595, true));
+
+        nodes.add(new Node("B10", 673, 538, true));
+        nodes.add(new Node("B11", 710, 532, true));
+        nodes.add(new Node("B12", 750, 524, true));
+        nodes.add(new Node("B13", 790, 518, true));
+
+        nodes.add(new Node("B14", 750, 430, true));
+        nodes.add(new Node("B15", 730, 410, true));
+        nodes.add(new Node("B16", 710, 390, true));
+
+        nodes.add(new Node("B17", 640, 375, true));
+        nodes.add(new Node("B18", 620, 385, true));
+        nodes.add(new Node("B19", 600, 395, true));
+
+        nodes.add(new Node("B20", 600, 430, true));
+
+        nodes.add(new Node("B21", 652, 320, true));
+        nodes.add(new Node("B22", 631, 330, true));
+        nodes.add(new Node("B23", 610, 340, true));
+        nodes.add(new Node("B24", 589, 350, true));
+
+        nodes.add(new Node("MS Admin", 900, 180, true));
+        nodes.add(new Node("C1", 920, 170, true));
+        nodes.add(new Node("C2", 940, 160, true));
+        nodes.add(new Node("C3", 960, 150, true));
+
+        nodes.add(new Node("C4", 925, 125, true));
+        nodes.add(new Node("C5", 945, 115, true));
+        nodes.add(new Node("C6", 965, 105, true));
+
+        nodes.add(new Node("C7", 925, 250, true));
+        nodes.add(new Node("C8", 945, 265, true));
+        nodes.add(new Node("C9/Learning Commons", 960, 290, true));
+        nodes.add(new Node("C10", 990, 290, true));
+        nodes.add(new Node("C11", 1020, 287, true));
+        nodes.add(new Node("C12", 1050, 285, true));
+
+        nodes.add(new Node("S101", 750, 140, true));
+        nodes.add(new Node("S102/S103", 720, 135, true));
+        nodes.add(new Node("S104", 690, 130, true));
+
+        nodes.add(new Node("S105", 631, 110, true));
+        nodes.add(new Node("S106", 631, 120, true));
+
+        nodes.add(new Node("S203", 631, 9, true));
+        nodes.add(new Node("S202", 705, 105, true));
+        nodes.add(new Node("S201", 755, 110, true));
 
 
 
