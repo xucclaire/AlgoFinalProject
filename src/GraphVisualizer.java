@@ -44,15 +44,22 @@ public class GraphVisualizer extends JPanel {
 
     private final CArrayList<Node> nodes = new CArrayList<>();
     private final CArrayList<Edge> edges = new CArrayList<>();
-    private final JTextArea clickedNodeDisplay;
     private final AdjacencyListGraph graph;
+
 
     private Node startNode = null;
     private Node endNode = null;
     private CArrayList<Node> pathNodes = new CArrayList<>();
 
-    public GraphVisualizer(JTextArea clickedNodeDisplay) {
-        this.clickedNodeDisplay = clickedNodeDisplay;
+    private JPanel clickedNodesPanel;
+    private JScrollPane clickedScrollPane;
+    private CArrayList<JCheckBox> backpackCheckboxes = new CArrayList<>();
+
+    public GraphVisualizer() {
+        clickedNodesPanel = new JPanel();
+        clickedNodesPanel.setLayout(new BoxLayout(clickedNodesPanel, BoxLayout.Y_AXIS));
+        clickedScrollPane = new JScrollPane(clickedNodesPanel);
+        clickedScrollPane.setPreferredSize(new Dimension(300, 770));  // width for side panel
 
         setupNodes();
         graph = new AdjacencyListGraph(nodes.size(), false);
@@ -61,14 +68,18 @@ public class GraphVisualizer extends JPanel {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    resetSelection();
+                    return;
+                }
                 for (int i = 0; i < nodes.size(); i++) {
                     Node node = nodes.get(i);
                     if (node.visible && node.contains(e.getX(), e.getY())) {
                         handleClick(node);
-                        repaint();
                         break;
                     }
                 }
+                repaint();
             }
         });
     }
@@ -79,13 +90,11 @@ public class GraphVisualizer extends JPanel {
         if (clickedNodes.isEmpty()) {
             clickedNodes.add(node);
             pathNodes = new CArrayList<>();
-            pathNodes.add(node); // <<< Add starting node immediately!
-            updateClickedText("Start selected: " + node.name);
+            pathNodes.add(node);
         } else {
             Node lastNode = clickedNodes.get(clickedNodes.size() - 1);
             clickedNodes.add(node);
 
-            // Find path from lastNode to the new node
             int startIdx = getNodeIndex(lastNode);
             int endIdx = getNodeIndex(node);
 
@@ -97,22 +106,27 @@ public class GraphVisualizer extends JPanel {
                     pathNodes.add(segment.get(i));
                 }
             }
-
-            updateClickedText("Added node: " + node.name);
         }
+        addCheckboxForNode(node);
         repaint();
     }
-
-    private void updateClickedText(String info) {
-        StringBuilder sb = new StringBuilder(info + "\n\n");
-        if (!pathNodes.isEmpty()) {
-            sb.append("Path:\n");
-            for (int i = 0; i < pathNodes.size(); i++) {
-                sb.append("- ").append(pathNodes.get(i).name).append("\n");
-            }
-        }
-        clickedNodeDisplay.setText(sb.toString());
+    private void addCheckboxForNode(Node node) {
+        JCheckBox box = new JCheckBox(node.name);
+        box.setSelected(true);
+        backpackCheckboxes.add(box);
+        clickedNodesPanel.add(box);
+        clickedNodesPanel.revalidate();
+        clickedNodesPanel.repaint();
     }
+    private void resetSelection() {
+        clickedNodes.clear();
+        pathNodes = new CArrayList<>();
+        backpackCheckboxes = new CArrayList<>();
+        clickedNodesPanel.removeAll();
+        clickedNodesPanel.revalidate();
+        clickedNodesPanel.repaint();
+    }
+
 
     private void findPath() {
         if (startNode == null || endNode == null) return;
@@ -123,7 +137,7 @@ public class GraphVisualizer extends JPanel {
         int[] prev = dijkstra(startIdx);
         pathNodes = reconstructPath(prev, startIdx, endIdx);
 
-        updateClickedText("Path from " + startNode.name + " to " + endNode.name + ":");
+//        updateClickedText("Path from " + startNode.name + " to " + endNode.name + ":");
     }
 
     private int getNodeIndex(Node node) {
@@ -181,7 +195,6 @@ public class GraphVisualizer extends JPanel {
         nodes.add(new Node("ARC", 740, 312, true));
         nodes.add(new Node("Student Center", 770, 330, true));
         nodes.add(new Node("Dining Hall", 765, 250, true));
-        nodes.add(new Node("Learning Commons", 935, 295, true));
         nodes.add(new Node("Gym", 120, 530, true));
         nodes.add(new Node("Pool", 190, 500, true));
         nodes.add(new Node("Locker Rooms", 190, 580, true));
@@ -297,6 +310,7 @@ public class GraphVisualizer extends JPanel {
 
         addEdgeByNames("Breezeway", "B12", 12.38);
         addEdgeByNames("B13", "B12", 8.8);
+        addEdgeByNames("B14", "B12", 10);
         addEdgeByNames("B12", "B11", 14.7);
         addEdgeByNames("B10", "B11", 3.8);
         addEdgeByNames("B13", "Student Center", 25.94);
@@ -437,15 +451,11 @@ public class GraphVisualizer extends JPanel {
     public static void main(String[] args) {
         JFrame frame = new JFrame("Campus Map - Pathfinding");
 
-        JTextArea clickedNodeText = new JTextArea(20, 25);
-        clickedNodeText.setEditable(false);
-        JScrollPane textScroll = new JScrollPane(clickedNodeText);
-
-        GraphVisualizer panel = new GraphVisualizer(clickedNodeText);
+        GraphVisualizer panel = new GraphVisualizer();
         panel.setPreferredSize(new Dimension(1300, 770));
         JScrollPane graphScroll = new JScrollPane(panel);
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, graphScroll, textScroll);
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, graphScroll, panel.clickedScrollPane);
         splitPane.setResizeWeight(1.0);
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

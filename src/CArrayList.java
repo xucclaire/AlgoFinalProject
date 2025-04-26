@@ -114,4 +114,11 @@ public class CArrayList<E> {
     public boolean isEmpty() {
         return size == 0;
     }
+
+    public void clear() {
+        for (int i = 0; i < size; i++) {
+            array[i] = null;
+        }
+        size = 0;
+    }
 }
