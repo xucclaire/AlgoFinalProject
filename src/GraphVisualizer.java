@@ -30,18 +30,6 @@ public class GraphVisualizer extends JPanel {
         }
     }
 
-    static class VisualEdge {
-        int from;
-        int to;
-        double weight;
-
-        public VisualEdge(int from, int to, double weight) {
-            this.from = from;
-            this.to = to;
-            this.weight = weight;
-        }
-    }
-
     private final CArrayList<Node> nodes = new CArrayList<>();
     private final CArrayList<Edge> edges = new CArrayList<>();
     private final AdjacencyListGraph graph;
@@ -59,7 +47,7 @@ public class GraphVisualizer extends JPanel {
         clickedNodesPanel = new JPanel();
         clickedNodesPanel.setLayout(new BoxLayout(clickedNodesPanel, BoxLayout.Y_AXIS));
         clickedScrollPane = new JScrollPane(clickedNodesPanel);
-        clickedScrollPane.setPreferredSize(new Dimension(300, 770));  // width for side panel
+        clickedScrollPane.setPreferredSize(new Dimension(300, 770));
 
         setupNodes();
         graph = new AdjacencyListGraph(nodes.size(), false);
@@ -95,11 +83,11 @@ public class GraphVisualizer extends JPanel {
             Node lastNode = clickedNodes.get(clickedNodes.size() - 1);
             clickedNodes.add(node);
 
-            int startIdx = getNodeIndex(lastNode);
-            int endIdx = getNodeIndex(node);
+            int startIndex = getNodeIndex(lastNode);
+            int endIndex = getNodeIndex(node);
 
-            int[] prev = dijkstra(startIdx);
-            CArrayList<Node> segment = reconstructPath(prev, startIdx, endIdx);
+            int[] prev = dijkstra(startIndex);
+            CArrayList<Node> segment = reconstructPath(prev, startIndex, endIndex);
 
             if (segment.size() > 1) {
                 for (int i = 1; i < segment.size(); i++) {
@@ -137,7 +125,6 @@ public class GraphVisualizer extends JPanel {
         int[] prev = dijkstra(startIdx);
         pathNodes = reconstructPath(prev, startIdx, endIdx);
 
-//        updateClickedText("Path from " + startNode.name + " to " + endNode.name + ":");
     }
 
     private int getNodeIndex(Node node) {
@@ -156,7 +143,7 @@ public class GraphVisualizer extends JPanel {
         Arrays.fill(dist, Double.POSITIVE_INFINITY);
         Arrays.fill(prev, -1);
 
-        PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> Double.compare(a[1], b[1]));
+        PriorityQueue<int[]> pq = new PriorityQueue<>();
         dist[start] = 0;
         pq.offer(new int[]{start, 0});
 
@@ -393,26 +380,19 @@ public class GraphVisualizer extends JPanel {
         addEdgeByNames("PA2 Black Box", "PA3 Orchestra", 7.13);
         addEdgeByNames("PA2 Black Box", "PA1 Theater", 9.67);
 
-
-
-
-
-
-
-
     }
 
     private void addEdgeByNames(String name1, String name2, double weight) {
-        int idx1 = findNodeIndexByName(name1);
-        int idx2 = findNodeIndexByName(name2);
-        if (idx1 != -1 && idx2 != -1) {
-            graph.addEdge(idx1, idx2, weight);
-            edges.add(new Edge(idx1, idx2, weight));
-            edges.add(new Edge(idx2, idx1, weight));
+        int index1 = findNodeIndex(name1);
+        int index2 = findNodeIndex(name2);
+        if (index1 != -1 && index2 != -1) {
+            graph.addEdge(index1, index2, weight);
+            edges.add(new Edge(index1, index2, weight));
+            edges.add(new Edge(index2, index1, weight));
         }
     }
 
-    private int findNodeIndexByName(String name) {
+    private int findNodeIndex(String name) {
         for (int i = 0; i < nodes.size(); i++) {
             if (nodes.get(i).name.equals(name)) {
                 return i;
@@ -425,7 +405,6 @@ public class GraphVisualizer extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        // Draw all nodes
         for (int i = 0; i < nodes.size(); i++) {
             Node node = nodes.get(i);
             if (node.visible) {
@@ -437,7 +416,6 @@ public class GraphVisualizer extends JPanel {
             }
         }
 
-        // Draw path lines
         if (pathNodes.size() >= 2) {
             g.setColor(Color.RED);
             for (int i = 0; i < pathNodes.size() - 1; i++) {
