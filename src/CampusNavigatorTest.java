@@ -21,7 +21,7 @@ public class CampusNavigatorTest {
         // 2 - Lunch (does NOT require backpack)
         // 3 - Chem (requires backpack)
         // 5 - Library (does NOT require backpack)
-        List<ScheduleEntry> schedule = new ArrayList<>();
+        CArrayList<ScheduleEntry> schedule = new CArrayList<>();
         schedule.add(new ScheduleEntry(0, true));   // Start with backpack
         schedule.add(new ScheduleEntry(1, true));   // Econ
         schedule.add(new ScheduleEntry(2, false));  // Lunch

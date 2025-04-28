@@ -1,5 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
@@ -45,7 +47,8 @@ public class GraphVisualizer extends JPanel {
     private final CArrayList<Node> nodes = new CArrayList<>();
     private final CArrayList<Edge> edges = new CArrayList<>();
     private final AdjacencyListGraph graph;
-
+    private CampusNavigator navigator;
+    private CArrayList<ScheduleEntry> scheduleEntries = new CArrayList<>();
 
     private Node startNode = null;
     private Node endNode = null;
@@ -55,15 +58,38 @@ public class GraphVisualizer extends JPanel {
     private JScrollPane clickedScrollPane;
     private CArrayList<JCheckBox> backpackCheckboxes = new CArrayList<>();
 
+    private JTextArea actionsDisplay;
+
     public GraphVisualizer() {
         clickedNodesPanel = new JPanel();
         clickedNodesPanel.setLayout(new BoxLayout(clickedNodesPanel, BoxLayout.Y_AXIS));
-        clickedScrollPane = new JScrollPane(clickedNodesPanel);
-        clickedScrollPane.setPreferredSize(new Dimension(300, 770));  // width for side panel
+
+        JPanel rightPanel = new JPanel();
+        rightPanel.setLayout(new BorderLayout());
+
+// Panel for clicked nodes
+        JScrollPane clickedScrollPane = new JScrollPane(clickedNodesPanel);
+        clickedScrollPane.setPreferredSize(new Dimension(300, 400));
+
+// TextArea for actions
+        actionsDisplay = new JTextArea();
+        actionsDisplay.setEditable(false);
+        JScrollPane actionsScrollPane = new JScrollPane(actionsDisplay);
+        actionsScrollPane.setPreferredSize(new Dimension(300, 370));
+
+// Stack them vertically
+        rightPanel.add(clickedScrollPane, BorderLayout.NORTH);
+        rightPanel.add(actionsScrollPane, BorderLayout.SOUTH);
+
+// Save scrollpane reference (not clickedScrollPane anymore)
+        this.clickedScrollPane = new JScrollPane(rightPanel);
+        this.clickedScrollPane.setPreferredSize(new Dimension(300, 770));
+
 
         setupNodes();
         graph = new AdjacencyListGraph(nodes.size(), false);
         setupEdges();
+        navigator = new CampusNavigator(graph, 1.5); // 1.5x weight when carrying
 
         addMouseListener(new MouseAdapter() {
             @Override
@@ -107,7 +133,9 @@ public class GraphVisualizer extends JPanel {
                 }
             }
         }
+
         addCheckboxForNode(node);
+        rerunSchedule();
         repaint();
     }
     private void addCheckboxForNode(Node node) {
@@ -115,8 +143,74 @@ public class GraphVisualizer extends JPanel {
         box.setSelected(true);
         backpackCheckboxes.add(box);
         clickedNodesPanel.add(box);
+
+        box.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                rerunSchedule();
+                repaint();
+            }
+        });
+
         clickedNodesPanel.revalidate();
         clickedNodesPanel.repaint();
+    }
+    private void rerunSchedule() {
+        if (navigator == null || clickedNodes.isEmpty()) return;
+
+        scheduleEntries = new CArrayList<>();
+        for (int i = 0; i < clickedNodes.size(); i++) {
+            Node node = clickedNodes.get(i);
+            boolean needsBackpack = backpackCheckboxes.get(i).isSelected();
+            scheduleEntries.add(new ScheduleEntry(getNodeIndex(node), needsBackpack));
+        }
+
+        CArrayList<CampusNavigator.Position> fullPath =
+                navigator.computeFullSchedule(scheduleEntries);
+
+        pathNodes = new CArrayList<>();
+        for (int i = 0; i < fullPath.size(); i++) {
+            int v = fullPath.get(i).vertex;
+            pathNodes.add(nodes.get(v));
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (int j = 0; j < fullPath.size(); j++) {
+            CampusNavigator.Position state = fullPath.get(j);
+            String action;
+            if (state.action == null) {
+                action = "";
+            } else {
+                action = state.action.toLowerCase();
+            }
+
+            String nodeName = nodes.get(state.vertex).name;
+
+            if (action.contains("drop")) {
+                sb.append("- Drop backpack at ").append(nodeName).append("\n");
+            } else if (action.contains("pickup") || action.contains("pick up")) {
+                sb.append("- Pick up backpack at ").append(nodeName).append("\n");
+            }
+
+            boolean isClicked = false;
+            for (int k = 0; k < clickedNodes.size(); k++) {
+                if (getNodeIndex(clickedNodes.get(k)) == state.vertex) {
+                    isClicked = true;
+                    break;
+                }
+            }
+            if (isClicked) {
+                sb.append("- Arrived at ").append(nodeName);
+                if (state.carrying) {
+                    sb.append(" (carrying backpack)");
+                } else {
+                    sb.append(" (no backpack)");
+                }
+                sb.append("\n");
+            }
+        }
+
+        actionsDisplay.setText(sb.toString());
     }
     private void resetSelection() {
         clickedNodes.clear();
@@ -137,7 +231,6 @@ public class GraphVisualizer extends JPanel {
         int[] prev = dijkstra(startIdx);
         pathNodes = reconstructPath(prev, startIdx, endIdx);
 
-//        updateClickedText("Path from " + startNode.name + " to " + endNode.name + ":");
     }
 
     private int getNodeIndex(Node node) {
@@ -156,7 +249,7 @@ public class GraphVisualizer extends JPanel {
         Arrays.fill(dist, Double.POSITIVE_INFINITY);
         Arrays.fill(prev, -1);
 
-        PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> Double.compare(a[1], b[1]));
+        PriorityQueue<int[]> pq = new PriorityQueue<>();
         dist[start] = 0;
         pq.offer(new int[]{start, 0});
 
@@ -191,24 +284,23 @@ public class GraphVisualizer extends JPanel {
     }
 
     private void setupNodes() {
+        nodes.add(new Node("Kalman Field", 50, 120, true));
+        nodes.add(new Node("Tennis Courts", 150, 120, true));
+        nodes.add(new Node("Basketball Courts", 140, 360, true));
         nodes.add(new Node("Portola Road Entrance", 350, 750, true));
-        nodes.add(new Node("ARC", 740, 312, true));
-        nodes.add(new Node("Student Center", 770, 330, true));
-        nodes.add(new Node("Dining Hall", 765, 250, true));
+        nodes.add(new Node("ARC", 760, 312, true));
+        nodes.add(new Node("Student Center", 790, 330, true));
+        nodes.add(new Node("Dining Hall", 790, 270, true));
         nodes.add(new Node("Gym", 120, 530, true));
         nodes.add(new Node("Pool", 190, 500, true));
         nodes.add(new Node("Locker Rooms", 190, 580, true));
-        nodes.add(new Node("Basketball Courts", 140, 360, true));
-        nodes.add(new Node("Tennis Courts", 80, 270, true));
         nodes.add(new Node("Kovacs Field", 480, 750, true));
         nodes.add(new Node("Father Christopher Field/Track", 800, 750, true));
-        nodes.add(new Node("Kalman Field", 50, 62, true));
         nodes.add(new Node("Founders Hall", 505, 560, true));
         nodes.add(new Node("PA1 Theater", 390, 500, true));
-        nodes.add(new Node("PA2 Black Box", 375, 580, true));
+        nodes.add(new Node("PA2 Drama", 375, 580, true));
         nodes.add(new Node("PA3 Orchestra", 375, 650, true));
         nodes.add(new Node("PA4 Choir", 440, 640, true));
-        nodes.add(new Node("STREAM Center", 680, 175, true));
         nodes.add(new Node("Nurse's Office/Health Center", 1070, 550, true));
         nodes.add(new Node("Boys Dorm", 1000, 505, true));
         nodes.add(new Node("Girls Dorm", 1000, 390, true));
@@ -220,77 +312,78 @@ public class GraphVisualizer extends JPanel {
         nodes.add(new Node("Fitness Room", 130, 440, true));
 
         nodes.add(new Node("B1", 610, 595, true));
-        nodes.add(new Node("B2", 631, 589, true));
-        nodes.add(new Node("B3", 652, 583, true));
-        nodes.add(new Node("B4", 673, 577, true));
-        nodes.add(new Node("B5", 694, 571, true));
-        nodes.add(new Node("B6", 715, 567, true));
-        nodes.add(new Node("B7", 750, 561, true));
-        nodes.add(new Node("B8/B9", 771, 555, true));
+        nodes.add(new Node("B2", 636, 589, true));
+        nodes.add(new Node("B3", 662, 583, true));
+        nodes.add(new Node("B4", 688, 577, true));
+        nodes.add(new Node("B5", 714, 571, true));
+        nodes.add(new Node("B6", 740, 567, true));
+        nodes.add(new Node("B7", 795, 561, true));
+        nodes.add(new Node("B8", 821, 555, true));
+        nodes.add(new Node("B9", 851, 555, true));
+        //nodes.add(new Node("BXX", 770, 555, true));
 
-        nodes.add(new Node("B10", 673, 538, true));
-        nodes.add(new Node("B11", 710, 532, true));
-        nodes.add(new Node("B12", 750, 524, true));
-        nodes.add(new Node("B13", 790, 518, true));
+        nodes.add(new Node("B10", 688, 538, true));
+        nodes.add(new Node("B11", 714, 532, true));
+        nodes.add(new Node("B12", 795, 524, true));
+        nodes.add(new Node("B13", 821, 518, true));
 
-        nodes.add(new Node("B14", 750, 430, true));
-        nodes.add(new Node("B15", 730, 410, true));
-        nodes.add(new Node("B16", 710, 390, true));
+        nodes.add(new Node("B14", 790, 430, true));
+        nodes.add(new Node("B15", 760, 410, true));
+        nodes.add(new Node("B16", 730, 390, true));
 
-        nodes.add(new Node("B17", 640, 375, true));
-        nodes.add(new Node("B18", 620, 385, true));
-        nodes.add(new Node("B19", 600, 395, true));
+        nodes.add(new Node("B17", 688, 375, true));
+        nodes.add(new Node("B18", 662, 385, true));
+        nodes.add(new Node("B19", 636, 395, true));
 
-        nodes.add(new Node("B20", 600, 430, true));
+        nodes.add(new Node("B20", 636, 440, true));
 
-        nodes.add(new Node("B21", 652, 320, true));
-        nodes.add(new Node("B22", 631, 330, true));
-        nodes.add(new Node("B23", 610, 340, true));
-        nodes.add(new Node("B24", 589, 350, true));
+        nodes.add(new Node("B21", 714, 320, true));
+        nodes.add(new Node("B22", 688, 330, true));
+        nodes.add(new Node("B23", 662, 340, true));
+        nodes.add(new Node("B24", 636, 350, true));
 
         nodes.add(new Node("MS Admin", 900, 180, true));
-        nodes.add(new Node("C1", 920, 170, true));
-        nodes.add(new Node("C2", 940, 160, true));
-        nodes.add(new Node("C3", 960, 150, true));
+        nodes.add(new Node("C1", 925, 170, true));
+        nodes.add(new Node("C2", 950, 160, true));
+        nodes.add(new Node("C3", 975, 150, true));
 
         nodes.add(new Node("C4", 925, 125, true));
-        nodes.add(new Node("C5", 945, 115, true));
-        nodes.add(new Node("C6", 965, 105, true));
+        nodes.add(new Node("C5", 950, 115, true));
+        nodes.add(new Node("C6", 975, 105, true));
 
         nodes.add(new Node("C7", 925, 250, true));
-        nodes.add(new Node("C8", 945, 265, true));
-        nodes.add(new Node("C9/Learning Commons", 960, 290, true));
-        nodes.add(new Node("C10", 990, 290, true));
-        nodes.add(new Node("C11", 1020, 287, true));
-        nodes.add(new Node("C12", 1050, 285, true));
+        nodes.add(new Node("C8", 950, 270, true));
+        nodes.add(new Node("C9/ Learning Commons", 975, 290, true));
+        nodes.add(new Node("C10", 1005, 290, true));
+        nodes.add(new Node("C11", 1035, 287, true));
+        nodes.add(new Node("C12", 1065, 285, true));
 
-        nodes.add(new Node("S101", 750, 140, true));
-        nodes.add(new Node("S102/S103", 720, 135, true));
-        nodes.add(new Node("S104", 690, 130, true));
+        nodes.add(new Node("S101", 790, 180, true));
+        nodes.add(new Node("S102 S103", 755, 165, true));
+        nodes.add(new Node("S104", 720, 150, true));
+        nodes.add(new Node("Maker Court", 680, 135, true));
 
-        nodes.add(new Node("S105", 631, 110, true));
-        nodes.add(new Node("S106", 631, 120, true));
+        nodes.add(new Node("S105", 640, 120, true));
+        nodes.add(new Node("S106", 640, 160, true));
 
-        nodes.add(new Node("S203", 631, 109, true));
-        nodes.add(new Node("S202", 705, 105, true));
-        nodes.add(new Node("S201", 755, 110, true));
+        nodes.add(new Node("S203", 640, 65, true));
+        nodes.add(new Node("S202", 720, 95, true));
+        nodes.add(new Node("S201", 790, 125, true));
 
-        nodes.add(new Node("Junior Parking", 631, 85, true));
+        nodes.add(new Node("Junior Parking", 580, 65, true));
 
         nodes.add(new Node("Church Square", 992, 187, false));
         nodes.add(new Node("Schilling Square", 682, 436, false));
-        nodes.add(new Node("Maker Court", 660, 187, false));
         nodes.add(new Node("ITN-B3-B4", 653, 560, false));
-        nodes.add(new Node("Maker Court", 660, 187, false));
+        nodes.add(new Node("Maker Court", 650, 135, false));
         nodes.add(new Node("Breezeway", 725, 550, false));
         nodes.add(new Node("Fr.Egon Plaza", 440, 580, false));
 
         nodes.add(new Node("ITN-Dine-MS", 653, 560, false));
         nodes.add(new Node("ITN-SRM-MS", 653, 560, false));
 
-
-
     }
+
 
     private void setupEdges() {
         addEdgeByNames("B1", "B2", 11.03);
@@ -423,30 +516,37 @@ public class GraphVisualizer extends JPanel {
 
     @Override
     protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
+    super.paintComponent(g);
 
-        // Draw all nodes
-        for (int i = 0; i < nodes.size(); i++) {
-            Node node = nodes.get(i);
-            if (node.visible) {
-                g.setColor(Color.BLUE);
-                g.fillOval(node.x - 10, node.y - 10, 20, 20);
-                g.setColor(Color.BLACK);
-                g.drawRect(node.x - 10, node.y - 10, 20, 20);
-                g.drawString(node.name, node.x + 15, node.y + 5);
-            }
-        }
+    // Draw all nodes
+    for (int i = 0; i < nodes.size(); i++) {
+        Node node = nodes.get(i);
+        if (node.visible) {
+            g.setColor(Color.BLUE);
+            g.fillOval(node.x - 10, node.y - 10, 20, 20);
+            g.setColor(Color.BLACK);
+            g.drawRect(node.x - 10, node.y - 10, 20, 20);
 
-        // Draw path lines
-        if (pathNodes.size() >= 2) {
-            g.setColor(Color.RED);
-            for (int i = 0; i < pathNodes.size() - 1; i++) {
-                Node a = pathNodes.get(i);
-                Node b = pathNodes.get(i + 1);
-                g.drawLine(a.x, a.y, b.x, b.y);
+            String[] words = node.name.split(" ");
+            int lineHeight = 15; // Adjust line height as needed
+            for (int j = 0; j < words.length; j++) {
+                g.drawString(words[j], node.x - 10, node.y + 25 + (j * lineHeight));
             }
+            // g.drawString(node.name, node.x-10, node.y + 25);
         }
     }
+
+    // Draw path lines
+    if (pathNodes.size() >= 2) {
+        g.setColor(Color.RED);
+        for (int i = 0; i < pathNodes.size() - 1; i++) {
+            Node a = pathNodes.get(i);
+            Node b = pathNodes.get(i + 1);
+            g.drawLine(a.x, a.y, b.x, b.y);
+        }
+    }
+    }
+
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("Campus Map - Pathfinding");

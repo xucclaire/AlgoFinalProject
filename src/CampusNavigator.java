@@ -115,7 +115,7 @@ public class CampusNavigator{
         return path;
     }
 
-    public CArrayList<Position> computeFullSchedule(List<ScheduleEntry> schedule) {
+    public CArrayList<Position> computeFullSchedule(CArrayList<ScheduleEntry> schedule) {
         CArrayList<Position> fullPath = new CArrayList<>();
         if (schedule == null || schedule.isEmpty()) {
             return fullPath;
