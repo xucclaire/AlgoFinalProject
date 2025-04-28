@@ -165,51 +165,39 @@ public class GraphVisualizer extends JPanel {
             scheduleEntries.add(new ScheduleEntry(getNodeIndex(node), needsBackpack));
         }
 
-        CArrayList<CampusNavigator.Position> fullPath =
-                navigator.computeFullSchedule(scheduleEntries);
+        CArrayList<CampusNavigator.Position> fullPath = navigator.computeFullSchedule(scheduleEntries);
 
         pathNodes = new CArrayList<>();
         for (int i = 0; i < fullPath.size(); i++) {
-            int v = fullPath.get(i).vertex;
-            pathNodes.add(nodes.get(v));
+            int vertex = fullPath.get(i).vertex;
+            pathNodes.add(nodes.get(vertex));
         }
 
         StringBuilder sb = new StringBuilder();
-        for (int j = 0; j < fullPath.size(); j++) {
-            CampusNavigator.Position state = fullPath.get(j);
-            String action;
-            if (state.action == null) {
-                action = "";
-            } else {
-                action = state.action.toLowerCase();
-            }
+        for (int i = 0; i < clickedNodes.size(); i++) {
+            Node clicked = clickedNodes.get(i);
+            int clickedIndex = getNodeIndex(clicked);
 
-            String nodeName = nodes.get(state.vertex).name;
-
-            if (action.contains("drop")) {
-                sb.append("- Drop backpack at ").append(nodeName).append("\n");
-            } else if (action.contains("pickup") || action.contains("pick up")) {
-                sb.append("- Pick up backpack at ").append(nodeName).append("\n");
-            }
-
-            boolean isClicked = false;
-            for (int k = 0; k < clickedNodes.size(); k++) {
-                if (getNodeIndex(clickedNodes.get(k)) == state.vertex) {
-                    isClicked = true;
+            for (int j = 0; j < fullPath.size(); j++) {
+                CampusNavigator.Position state = fullPath.get(j);
+                if (state.vertex == clickedIndex) {
+                    if (state.action != null && state.action.toLowerCase().contains("drop")) {
+                        sb.append("- Drop backpack at ").append(clicked.name).append("\n");
+                    } else if (state.action != null && state.action.toLowerCase().contains("pickup")) {
+                        sb.append("- Pick up backpack at ").append(clicked.name).append("\n");
+                    } else {
+                        sb.append("- Arrived at ").append(clicked.name);
+                        if (state.carrying) {
+                            sb.append(" (carrying backpack)");
+                        } else {
+                            sb.append(" (no backpack)");
+                        }
+                        sb.append("\n");
+                    }
                     break;
                 }
             }
-            if (isClicked) {
-                sb.append("- Arrived at ").append(nodeName);
-                if (state.carrying) {
-                    sb.append(" (carrying backpack)");
-                } else {
-                    sb.append(" (no backpack)");
-                }
-                sb.append("\n");
-            }
         }
-
         actionsDisplay.setText(sb.toString());
     }
     private void resetSelection() {
@@ -249,7 +237,7 @@ public class GraphVisualizer extends JPanel {
         Arrays.fill(dist, Double.POSITIVE_INFINITY);
         Arrays.fill(prev, -1);
 
-        PriorityQueue<int[]> pq = new PriorityQueue<>();
+        PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> Double.compare(a[1], b[1]));
         dist[start] = 0;
         pq.offer(new int[]{start, 0});
 
@@ -320,7 +308,6 @@ public class GraphVisualizer extends JPanel {
         nodes.add(new Node("B7", 795, 561, true));
         nodes.add(new Node("B8", 821, 555, true));
         nodes.add(new Node("B9", 851, 555, true));
-        //nodes.add(new Node("BXX", 770, 555, true));
 
         nodes.add(new Node("B10", 688, 538, true));
         nodes.add(new Node("B11", 714, 532, true));
@@ -516,35 +503,33 @@ public class GraphVisualizer extends JPanel {
 
     @Override
     protected void paintComponent(Graphics g) {
-    super.paintComponent(g);
+        super.paintComponent(g);
 
-    // Draw all nodes
-    for (int i = 0; i < nodes.size(); i++) {
-        Node node = nodes.get(i);
-        if (node.visible) {
-            g.setColor(Color.BLUE);
-            g.fillOval(node.x - 10, node.y - 10, 20, 20);
-            g.setColor(Color.BLACK);
-            g.drawRect(node.x - 10, node.y - 10, 20, 20);
+        // Draw all nodes
+        for (int i = 0; i < nodes.size(); i++) {
+            Node node = nodes.get(i);
+            if (node.visible) {
+                g.setColor(Color.BLUE);
+                g.fillOval(node.x - 10, node.y - 10, 20, 20);
+                g.setColor(Color.BLACK);
+                g.drawRect(node.x - 10, node.y - 10, 20, 20);
 
-            String[] words = node.name.split(" ");
-            int lineHeight = 15; // Adjust line height as needed
-            for (int j = 0; j < words.length; j++) {
-                g.drawString(words[j], node.x - 10, node.y + 25 + (j * lineHeight));
+                String[] words = node.name.split(" ");
+                int lineHeight = 15;
+                for (int j = 0; j < words.length; j++) {
+                    g.drawString(words[j], node.x - 10, node.y + 25 + (j * lineHeight));
+                }
             }
-            // g.drawString(node.name, node.x-10, node.y + 25);
         }
-    }
 
-    // Draw path lines
-    if (pathNodes.size() >= 2) {
-        g.setColor(Color.RED);
-        for (int i = 0; i < pathNodes.size() - 1; i++) {
-            Node a = pathNodes.get(i);
-            Node b = pathNodes.get(i + 1);
-            g.drawLine(a.x, a.y, b.x, b.y);
+        if (pathNodes.size() >= 2) {
+            g.setColor(Color.RED);
+            for (int i = 0; i < pathNodes.size() - 1; i++) {
+                Node a = pathNodes.get(i);
+                Node b = pathNodes.get(i + 1);
+                g.drawLine(a.x, a.y, b.x, b.y);
+            }
         }
-    }
     }
 
 
