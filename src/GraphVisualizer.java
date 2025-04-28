@@ -24,6 +24,7 @@ public class GraphVisualizer extends JPanel {
     private final CArrayList<Node> clickedNodes       = new CArrayList<>();
     private final CArrayList<JCheckBox> backpackBoxes  = new CArrayList<>();
     private CArrayList<Node> pathNodes                 = new CArrayList<>();
+    private CArrayList<CampusNavigator.Position> lastFullPath;
 
     private final JPanel    clickedNodesPanel;
     public  final JScrollPane clickedScrollPane;
@@ -114,6 +115,7 @@ public class GraphVisualizer extends JPanel {
             int v = fullPath.get(i).vertex;
             pathNodes.add(nodes.get(v));
         }
+        this.lastFullPath = fullPath;
 
         StringBuilder sb = new StringBuilder();
 
@@ -403,35 +405,70 @@ public class GraphVisualizer extends JPanel {
         graph.addEdge(index1, index2, weight);
     }
 
+    @Override
     protected void paintComponent(Graphics g) {
-    super.paintComponent(g);
+        super.paintComponent(g);
+        Graphics2D g2 = (Graphics2D) g;
 
-    // Draw all nodes
-    for (int i = 0; i < nodes.size(); i++) {
-        Node node = nodes.get(i);
-        if (node.visible) {
-            g.setColor(Color.BLUE);
-            g.fillOval(node.x - 10, node.y - 10, 20, 20);
-            g.setColor(Color.BLACK);
-            g.drawRect(node.x - 10, node.y - 10, 20, 20);
+        g2.setColor(Color.RED);
+        g2.drawLine(20, 20, 60, 20);
+        g2.drawString("with backpack", 70, 25);
 
-            String[] words = node.name.split(" ");
+        g2.setColor(Color.ORANGE);
+        g2.drawLine(20, 40, 60, 40);
+        g2.drawString("no backpack", 70, 45);
+
+        for (int i = 0; i < nodes.size(); i++) {
+            Node n = nodes.get(i);
+            if (!n.visible) continue;
+            g2.setColor(Color.BLUE);
+            g2.fillOval(n.x - 10, n.y - 10, 20, 20);
+            g2.setColor(Color.BLACK);
+            g2.drawRect(n.x - 10, n.y - 10, 20, 20);
+
+            String[] words = n.name.split(" ");
             int lineHeight = 15;
             for (int j = 0; j < words.length; j++) {
-                g.drawString(words[j], node.x - 10, node.y + 25 + (j * lineHeight));
+                g2.drawString(words[j], n.x - 10, n.y + 25 + j * lineHeight);
             }
         }
-    }
 
-    // Draw path lines
-    if (pathNodes.size() >= 2) {
-        g.setColor(Color.RED);
-        for (int i = 0; i < pathNodes.size() - 1; i++) {
-            Node a = pathNodes.get(i);
-            Node b = pathNodes.get(i + 1);
-            g.drawLine(a.x, a.y, b.x, b.y);
+        if (lastFullPath != null && lastFullPath.size() >= 2) {
+            for (int i = 0; i < lastFullPath.size() - 1; i++) {
+                CampusNavigator.Position p     = lastFullPath.get(i);
+                CampusNavigator.Position nextP = lastFullPath.get(i + 1);
+                Node a = nodes.get(p.vertex);
+                Node b = nodes.get(nextP.vertex);
+
+                // choose red/orange
+                if (p.carrying) {
+                    g2.setColor(Color.RED);
+                } else {
+                    g2.setColor(Color.ORANGE);
+                }
+                g2.drawLine(a.x, a.y, b.x, b.y);
+
+                double dx = b.x - a.x, dy = b.y - a.y;
+                double len = Math.hypot(dx, dy);
+                double ux = dx / len, uy = dy / len;
+                int mx = (int)(a.x + ux * len * 0.8);
+                int my = (int)(a.y + uy * len * 0.8);
+                int px = (int)(-uy * 5), py = (int)(ux * 5);
+                int[] xs = { mx, mx - (int)(ux*10) + px, mx - (int)(ux*10) - px };
+                int[] ys = { my, my - (int)(uy*10) + py, my - (int)(uy*10) - py };
+                g2.fillPolygon(xs, ys, 3);
+            }
+
+            g2.setFont(g2.getFont().deriveFont(Font.BOLD, 12f));
+            for (int i = 0; i < lastFullPath.size(); i++) {
+                Node n = nodes.get(lastFullPath.get(i).vertex);
+                String num = Integer.toString(i + 1);
+                g2.setColor(Color.WHITE);
+                g2.fillOval(n.x - 6, n.y - 6, 12, 12);
+                g2.setColor(Color.BLACK);
+                g2.drawString(num, n.x - 3, n.y + 4);
+            }
         }
-    }
     }
 
 
