@@ -1,274 +1,177 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.Arrays;
-import java.util.PriorityQueue;
+import java.awt.event.*;
 
 public class GraphVisualizer extends JPanel {
-
     static class Node {
         String name;
         int x, y;
         boolean visible;
-
         public Node(String name, int x, int y, boolean visible) {
-            this.name = name;
-            this.x = x;
-            this.y = y;
-            this.visible = visible;
+            this.name = name; this.x = x; this.y = y; this.visible = visible;
         }
-
-        public boolean contains(int mouseX, int mouseY) {
-            int radius = 10;
-            return Math.pow(mouseX - x, 2) + Math.pow(mouseY - y, 2) <= radius * radius;
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
-    }
-
-    static class VisualEdge {
-        int from;
-        int to;
-        double weight;
-
-        public VisualEdge(int from, int to, double weight) {
-            this.from = from;
-            this.to = to;
-            this.weight = weight;
+        public boolean contains(int mx, int my) {
+            int r = 10;
+            return (mx - x)*(mx - x) + (my - y)*(my - y) <= r*r;
         }
     }
 
     private final CArrayList<Node> nodes = new CArrayList<>();
-    private final CArrayList<Edge> edges = new CArrayList<>();
     private final AdjacencyListGraph graph;
-    private CampusNavigator navigator;
+    private final CampusNavigator navigator;
     private CArrayList<ScheduleEntry> scheduleEntries = new CArrayList<>();
 
-    private Node startNode = null;
-    private Node endNode = null;
-    private CArrayList<Node> pathNodes = new CArrayList<>();
+    private final CArrayList<Node> clickedNodes       = new CArrayList<>();
+    private final CArrayList<JCheckBox> backpackBoxes  = new CArrayList<>();
+    private CArrayList<Node> pathNodes                 = new CArrayList<>();
 
-    private JPanel clickedNodesPanel;
-    private JScrollPane clickedScrollPane;
-    private CArrayList<JCheckBox> backpackCheckboxes = new CArrayList<>();
-
-    private JTextArea actionsDisplay;
+    private final JPanel    clickedNodesPanel;
+    public  final JScrollPane clickedScrollPane;
+    private final JTextArea actionsDisplay;
 
     public GraphVisualizer() {
         clickedNodesPanel = new JPanel();
         clickedNodesPanel.setLayout(new BoxLayout(clickedNodesPanel, BoxLayout.Y_AXIS));
-
-        JPanel rightPanel = new JPanel();
-        rightPanel.setLayout(new BorderLayout());
-
-// Panel for clicked nodes
-        JScrollPane clickedScrollPane = new JScrollPane(clickedNodesPanel);
-        clickedScrollPane.setPreferredSize(new Dimension(300, 400));
-
-// TextArea for actions
         actionsDisplay = new JTextArea();
         actionsDisplay.setEditable(false);
-        JScrollPane actionsScrollPane = new JScrollPane(actionsDisplay);
-        actionsScrollPane.setPreferredSize(new Dimension(300, 370));
 
-// Stack them vertically
-        rightPanel.add(clickedScrollPane, BorderLayout.NORTH);
-        rightPanel.add(actionsScrollPane, BorderLayout.SOUTH);
-
-// Save scrollpane reference (not clickedScrollPane anymore)
-        this.clickedScrollPane = new JScrollPane(rightPanel);
-        this.clickedScrollPane.setPreferredSize(new Dimension(300, 770));
-
+        JPanel right = new JPanel(new BorderLayout());
+        JScrollPane clicks = new JScrollPane(clickedNodesPanel);
+        clicks.setPreferredSize(new Dimension(300, 400));
+        JScrollPane actions = new JScrollPane(actionsDisplay);
+        actions.setPreferredSize(new Dimension(300, 370));
+        right.add(clicks, BorderLayout.NORTH);
+        right.add(actions, BorderLayout.SOUTH);
+        clickedScrollPane = new JScrollPane(right);
+        clickedScrollPane.setPreferredSize(new Dimension(300, 770));
 
         setupNodes();
-        graph = new AdjacencyListGraph(nodes.size(), false);
+        graph     = new AdjacencyListGraph(nodes.size(), false);
         setupEdges();
-        navigator = new CampusNavigator(graph, 1.5); // 1.5x weight when carrying
+        navigator = new CampusNavigator(graph, 1.5);
 
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (SwingUtilities.isRightMouseButton(e)) {
                     resetSelection();
+                    repaint();
                     return;
                 }
                 for (int i = 0; i < nodes.size(); i++) {
-                    Node node = nodes.get(i);
-                    if (node.visible && node.contains(e.getX(), e.getY())) {
-                        handleClick(node);
-                        break;
+                    Node n = nodes.get(i);
+                    if (n.visible && n.contains(e.getX(), e.getY())) {
+                        handleClick(n);
+                        repaint();
+                        return;
                     }
                 }
-                repaint();
             }
         });
     }
 
-    private final CArrayList<Node> clickedNodes = new CArrayList<>();
-
     private void handleClick(Node node) {
-        if (clickedNodes.isEmpty()) {
-            clickedNodes.add(node);
-            pathNodes = new CArrayList<>();
-            pathNodes.add(node);
-        } else {
-            Node lastNode = clickedNodes.get(clickedNodes.size() - 1);
-            clickedNodes.add(node);
-
-            int startIdx = getNodeIndex(lastNode);
-            int endIdx = getNodeIndex(node);
-
-            int[] prev = dijkstra(startIdx);
-            CArrayList<Node> segment = reconstructPath(prev, startIdx, endIdx);
-
-            if (segment.size() > 1) {
-                for (int i = 1; i < segment.size(); i++) {
-                    pathNodes.add(segment.get(i));
-                }
-            }
-        }
-
-        addCheckboxForNode(node);
+        clickedNodes.add(node);
+        addCheckboxFor(node);
         rerunSchedule();
-        repaint();
     }
-    private void addCheckboxForNode(Node node) {
-        JCheckBox box = new JCheckBox(node.name);
-        box.setSelected(true);
-        backpackCheckboxes.add(box);
-        clickedNodesPanel.add(box);
 
-        box.addActionListener(new ActionListener() {
-            @Override
+    private void addCheckboxFor(Node node) {
+        JCheckBox cb = new JCheckBox(node.name, true);
+        backpackBoxes.add(cb);
+        clickedNodesPanel.add(cb);
+        cb.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 rerunSchedule();
                 repaint();
             }
         });
-
         clickedNodesPanel.revalidate();
-        clickedNodesPanel.repaint();
     }
-    private void rerunSchedule() {
-        if (navigator == null || clickedNodes.isEmpty()) return;
 
-        scheduleEntries = new CArrayList<>();
-        for (int i = 0; i < clickedNodes.size(); i++) {
-            Node node = clickedNodes.get(i);
-            boolean needsBackpack = backpackCheckboxes.get(i).isSelected();
-            scheduleEntries.add(new ScheduleEntry(getNodeIndex(node), needsBackpack));
+    private void rerunSchedule() {
+        if (navigator == null || clickedNodes.isEmpty()) {
+            return;
         }
 
-        CArrayList<CampusNavigator.Position> fullPath = navigator.computeFullSchedule(scheduleEntries);
+        scheduleEntries = new CArrayList<ScheduleEntry>();
+        for (int i = 0; i < clickedNodes.size(); i++) {
+            Node n = clickedNodes.get(i);
+            boolean needBackpack;
+            if (backpackBoxes.get(i).isSelected()) {
+                needBackpack = true;
+            } else {
+                needBackpack = false;
+            }
+            scheduleEntries.add(new ScheduleEntry(getNodeIndex(n), needBackpack));
+        }
 
-        pathNodes = new CArrayList<>();
+        CArrayList<CampusNavigator.Position> fullPath =
+                navigator.computeFullSchedule(scheduleEntries);
+
+        pathNodes = new CArrayList<Node>();
         for (int i = 0; i < fullPath.size(); i++) {
-            int vertex = fullPath.get(i).vertex;
-            pathNodes.add(nodes.get(vertex));
+            int v = fullPath.get(i).vertex;
+            pathNodes.add(nodes.get(v));
         }
 
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < clickedNodes.size(); i++) {
-            Node clicked = clickedNodes.get(i);
-            int clickedIndex = getNodeIndex(clicked);
 
-            for (int j = 0; j < fullPath.size(); j++) {
-                CampusNavigator.Position state = fullPath.get(j);
-                if (state.vertex == clickedIndex) {
-                    if (state.action != null && state.action.toLowerCase().contains("drop")) {
-                        sb.append("- Drop backpack at ").append(clicked.name).append("\n");
-                    } else if (state.action != null && state.action.toLowerCase().contains("pickup")) {
-                        sb.append("- Pick up backpack at ").append(clicked.name).append("\n");
-                    } else {
-                        sb.append("- Arrived at ").append(clicked.name);
-                        if (state.carrying) {
+        for (int step = 0; step < fullPath.size(); step++) {
+            CampusNavigator.Position p = fullPath.get(step);
+
+            String action;
+            if (p.action == null) {
+                action = "";
+            } else {
+                action = p.action.toLowerCase();
+            }
+
+            String nodeName = nodes.get(p.vertex).name;
+
+            if (action.indexOf("drop") != -1) {
+                sb.append("- Drop backpack at ").append(nodeName).append("\n");
+            }
+            if (action.indexOf("pick up") != -1 || action.indexOf("pickup") != -1) {
+                sb.append("- Pick up backpack at ").append(nodeName).append("\n");
+            }
+            boolean isStart = action.startsWith("start");
+            boolean isMove  = action.startsWith("move");
+            if (isStart || isMove) {
+                for (int i = 0; i < clickedNodes.size(); i++) {
+                    Node clicked = clickedNodes.get(i);
+                    if (getNodeIndex(clicked) == p.vertex) {
+                        sb.append("- Arrived at ").append(nodeName);
+                        if (p.carrying) {
                             sb.append(" (carrying backpack)");
                         } else {
                             sb.append(" (no backpack)");
                         }
                         sb.append("\n");
                     }
-                    break;
                 }
             }
         }
+
         actionsDisplay.setText(sb.toString());
+        repaint();
     }
+
     private void resetSelection() {
         clickedNodes.clear();
-        pathNodes = new CArrayList<>();
-        backpackCheckboxes = new CArrayList<>();
+        backpackBoxes.clear();
+        pathNodes.clear();
         clickedNodesPanel.removeAll();
+        actionsDisplay.setText("");
         clickedNodesPanel.revalidate();
         clickedNodesPanel.repaint();
     }
 
-
-    private void findPath() {
-        if (startNode == null || endNode == null) return;
-
-        int startIdx = getNodeIndex(startNode);
-        int endIdx = getNodeIndex(endNode);
-
-        int[] prev = dijkstra(startIdx);
-        pathNodes = reconstructPath(prev, startIdx, endIdx);
-
-    }
-
     private int getNodeIndex(Node node) {
         for (int i = 0; i < nodes.size(); i++) {
-            if (nodes.get(i) == node) {
-                return i;
-            }
+            if (nodes.get(i) == node) return i;
         }
         return -1;
-    }
-
-    private int[] dijkstra(int start) {
-        int n = graph.getVertices();
-        double[] dist = new double[n];
-        int[] prev = new int[n];
-        Arrays.fill(dist, Double.POSITIVE_INFINITY);
-        Arrays.fill(prev, -1);
-
-        PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> Double.compare(a[1], b[1]));
-        dist[start] = 0;
-        pq.offer(new int[]{start, 0});
-
-        while (!pq.isEmpty()) {
-            int[] curr = pq.poll();
-            int u = curr[0];
-
-            for (Edge edge : graph.getNeighbors(u)) {
-                int v = edge.to;
-                double weight = edge.weight;
-                if (dist[u] + weight < dist[v]) {
-                    dist[v] = dist[u] + weight;
-                    prev[v] = u;
-                    pq.offer(new int[]{v, (int) dist[v]});
-                }
-            }
-        }
-        return prev;
-    }
-
-    private CArrayList<Node> reconstructPath(int[] prev, int start, int end) {
-        CArrayList<Node> path = new CArrayList<>();
-        int at = end;
-        while (at != -1) {
-            path.add(0, nodes.get(at));
-            at = prev[at];
-        }
-        if (!path.isEmpty() && getNodeIndex(path.get(0)) == start) {
-            return path;
-        }
-        return new CArrayList<>();
     }
 
     private void setupNodes() {
@@ -286,7 +189,7 @@ public class GraphVisualizer extends JPanel {
         nodes.add(new Node("Father Christopher Field/Track", 800, 750, true));
         nodes.add(new Node("Founders Hall", 505, 560, true));
         nodes.add(new Node("PA1 Theater", 390, 500, true));
-        nodes.add(new Node("PA2 Drama", 375, 580, true));
+        nodes.add(new Node("PA2 Black Box", 375, 580, true));
         nodes.add(new Node("PA3 Orchestra", 375, 650, true));
         nodes.add(new Node("PA4 Choir", 440, 640, true));
         nodes.add(new Node("Nurse's Office/Health Center", 1070, 550, true));
@@ -306,8 +209,7 @@ public class GraphVisualizer extends JPanel {
         nodes.add(new Node("B5", 714, 571, true));
         nodes.add(new Node("B6", 740, 567, true));
         nodes.add(new Node("B7", 795, 561, true));
-        nodes.add(new Node("B8", 821, 555, true));
-        nodes.add(new Node("B9", 851, 555, true));
+        nodes.add(new Node("B8/B9", 821, 555, true));
 
         nodes.add(new Node("B10", 688, 538, true));
         nodes.add(new Node("B11", 714, 532, true));
@@ -346,7 +248,7 @@ public class GraphVisualizer extends JPanel {
         nodes.add(new Node("C12", 1065, 285, true));
 
         nodes.add(new Node("S101", 790, 180, true));
-        nodes.add(new Node("S102 S103", 755, 165, true));
+        nodes.add(new Node("S102/S103", 755, 165, true));
         nodes.add(new Node("S104", 720, 150, true));
         nodes.add(new Node("Maker Court", 680, 135, true));
 
@@ -420,6 +322,7 @@ public class GraphVisualizer extends JPanel {
         addEdgeByNames("ARC", "B21", 29.12);
         addEdgeByNames("Student Center", "B21", 32.2);
         addEdgeByNames("Student Center", "ARC", 18.7);
+        addEdgeByNames("Dining Hall", "ARC", 20.1);
         addEdgeByNames("Student Center", "Dining Hall", 22.75);
 
         addEdgeByNames("Maker Court", "Dining Hall", 14.27);
@@ -473,25 +376,12 @@ public class GraphVisualizer extends JPanel {
         addEdgeByNames("PA2 Black Box", "PA3 Orchestra", 7.13);
         addEdgeByNames("PA2 Black Box", "PA1 Theater", 9.67);
 
-
-
-
-
-
-
-
     }
 
-    private void addEdgeByNames(String name1, String name2, double weight) {
-        int idx1 = findNodeIndexByName(name1);
-        int idx2 = findNodeIndexByName(name2);
-        if (idx1 != -1 && idx2 != -1) {
-            graph.addEdge(idx1, idx2, weight);
-            edges.add(new Edge(idx1, idx2, weight));
-            edges.add(new Edge(idx2, idx1, weight));
-        }
-    }
-
+    /**
+     * Find the index of a node given its name.
+     * @return index in nodes[], or –1 if not found.
+     */
     private int findNodeIndexByName(String name) {
         for (int i = 0; i < nodes.size(); i++) {
             if (nodes.get(i).name.equals(name)) {
@@ -501,52 +391,64 @@ public class GraphVisualizer extends JPanel {
         return -1;
     }
 
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-
-        // Draw all nodes
-        for (int i = 0; i < nodes.size(); i++) {
-            Node node = nodes.get(i);
-            if (node.visible) {
-                g.setColor(Color.BLUE);
-                g.fillOval(node.x - 10, node.y - 10, 20, 20);
-                g.setColor(Color.BLACK);
-                g.drawRect(node.x - 10, node.y - 10, 20, 20);
-
-                String[] words = node.name.split(" ");
-                int lineHeight = 15;
-                for (int j = 0; j < words.length; j++) {
-                    g.drawString(words[j], node.x - 10, node.y + 25 + (j * lineHeight));
-                }
-            }
+    /**
+     * Conveniently add an undirected edge by referring to node names.
+     */
+    private void addEdgeByNames(String name1, String name2, double weight) {
+        int index1 = findNodeIndexByName(name1);
+        int index2 = findNodeIndexByName(name2);
+        if (index1 == -1 || index2 == -1) {
+            throw new IllegalArgumentException("Unknown node(s): " + name1 + ", " + name2);
         }
+        graph.addEdge(index1, index2, weight);
+    }
 
-        if (pathNodes.size() >= 2) {
-            g.setColor(Color.RED);
-            for (int i = 0; i < pathNodes.size() - 1; i++) {
-                Node a = pathNodes.get(i);
-                Node b = pathNodes.get(i + 1);
-                g.drawLine(a.x, a.y, b.x, b.y);
+    protected void paintComponent(Graphics g) {
+    super.paintComponent(g);
+
+    // Draw all nodes
+    for (int i = 0; i < nodes.size(); i++) {
+        Node node = nodes.get(i);
+        if (node.visible) {
+            g.setColor(Color.BLUE);
+            g.fillOval(node.x - 10, node.y - 10, 20, 20);
+            g.setColor(Color.BLACK);
+            g.drawRect(node.x - 10, node.y - 10, 20, 20);
+
+            String[] words = node.name.split(" ");
+            int lineHeight = 15;
+            for (int j = 0; j < words.length; j++) {
+                g.drawString(words[j], node.x - 10, node.y + 25 + (j * lineHeight));
             }
         }
     }
 
+    // Draw path lines
+    if (pathNodes.size() >= 2) {
+        g.setColor(Color.RED);
+        for (int i = 0; i < pathNodes.size() - 1; i++) {
+            Node a = pathNodes.get(i);
+            Node b = pathNodes.get(i + 1);
+            g.drawLine(a.x, a.y, b.x, b.y);
+        }
+    }
+    }
+
 
     public static void main(String[] args) {
-        JFrame frame = new JFrame("Campus Map - Pathfinding");
-
+        JFrame f = new JFrame("Campus Navigator");
         GraphVisualizer panel = new GraphVisualizer();
-        panel.setPreferredSize(new Dimension(1300, 770));
-        JScrollPane graphScroll = new JScrollPane(panel);
-
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, graphScroll, panel.clickedScrollPane);
-        splitPane.setResizeWeight(1.0);
-
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.getContentPane().add(splitPane);
-        frame.pack();
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
+        panel.setPreferredSize(new Dimension(1300,770));
+        JSplitPane split = new JSplitPane(
+                JSplitPane.HORIZONTAL_SPLIT,
+                new JScrollPane(panel),
+                panel.clickedScrollPane
+        );
+        split.setResizeWeight(1.0);
+        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        f.add(split);
+        f.pack();
+        f.setLocationRelativeTo(null);
+        f.setVisible(true);
     }
 }

@@ -50,11 +50,23 @@ public class CampusNavigator{
         return true;
     }
 
-    public CArrayList<Position> computeOptimalPathSegment(int start, int end, boolean startCarrying, boolean endCarrying) {
+    public CArrayList<Position> computeOptimalPathSegment(
+            int start,
+            int end,
+            boolean startCarrying,
+            boolean endCarrying
+    ) {
         PriorityQueue<Position> queue = new PriorityQueue<>();
         CArrayList<Position> bestPositions = new CArrayList<>();
 
-        Position startPosition = new Position(start, startCarrying, start, 0.0, null, "start");
+        Position startPosition = new Position(
+                start,
+                startCarrying,
+                start,
+                0.0,
+                null,
+                "start"
+        );
         updateBestPosition(startPosition, bestPositions);
         queue.add(startPosition);
 
@@ -69,15 +81,30 @@ public class CampusNavigator{
             }
 
             if (current.carrying) {
-                Position dropPosition = new Position(current.vertex, false, current.vertex,
-                        current.cost, current, "drop backpack");
+                double dropCost = current.cost + 0.01;
+                Position dropPosition = new Position(
+                        current.vertex,
+                        false,
+                        current.vertex,
+                        dropCost,
+                        current,
+                        "drop backpack"
+                );
                 if (updateBestPosition(dropPosition, bestPositions)) {
                     queue.add(dropPosition);
                 }
-            } else {
+            }
+            else {
                 if (current.vertex == current.backpackLocation) {
-                    Position pickupPosition = new Position(current.vertex, true, current.backpackLocation,
-                            current.cost, current, "pick up backpack");
+                    double pickupCost = current.cost + 0.01;
+                    Position pickupPosition = new Position(
+                            current.vertex,
+                            true,
+                            current.backpackLocation,
+                            pickupCost,
+                            current,
+                            "pick up backpack"
+                    );
                     if (updateBestPosition(pickupPosition, bestPositions)) {
                         queue.add(pickupPosition);
                     }
@@ -87,17 +114,32 @@ public class CampusNavigator{
             SinglyLinkedList<Edge> neighbors = graph.getNeighbors(current.vertex);
             for (Edge edge : neighbors) {
                 int nextVertex = edge.to;
-                double edgeCost = current.carrying ? edge.weight * backpackMultiplier : edge.weight;
-                Position nextPosition;
+                double edgeCost;
                 if (current.carrying) {
-                    nextPosition = new Position(nextVertex, true, current.backpackLocation,
-                            current.cost + edgeCost, current,
-                            "move from " + current.vertex + " to " + nextVertex + " with backpack");
+                    edgeCost = current.cost + edge.weight * backpackMultiplier;
                 } else {
-                    nextPosition = new Position(nextVertex, false, current.backpackLocation,
-                            current.cost + edgeCost, current,
-                            "move from " + current.vertex + " to " + nextVertex + " without backpack");
+                    edgeCost = current.cost + edge.weight;
                 }
+
+                String moveAction;
+                if (current.carrying) {
+                    moveAction = "move from " + current.vertex +
+                            " to " + nextVertex +
+                            " with backpack";
+                } else {
+                    moveAction = "move from " + current.vertex +
+                            " to " + nextVertex +
+                            " without backpack";
+                }
+
+                Position nextPosition = new Position(
+                        nextVertex,
+                        current.carrying,
+                        current.backpackLocation,
+                        edgeCost,
+                        current,
+                        moveAction
+                );
                 if (updateBestPosition(nextPosition, bestPositions)) {
                     queue.add(nextPosition);
                 }
@@ -106,10 +148,10 @@ public class CampusNavigator{
 
         CArrayList<Position> path = new CArrayList<>();
         if (goalPosition != null) {
-            Position s = goalPosition;
-            while (s != null) {
-                path.add(0, s);
-                s = s.prev;
+            Position cursor = goalPosition;
+            while (cursor != null) {
+                path.add(0, cursor);
+                cursor = cursor.prev;
             }
         }
         return path;
