@@ -214,32 +214,32 @@ public class GraphVisualizer extends JPanel {
 
     private void setupNodes() {
         nodes.add(new Node("Kalman Field", 50, 180, true));
-        nodes.add(new Node("Tennis Courts", 150, 180, true));
-        nodes.add(new Node("Basketball Courts", 140, 310, true));
+        nodes.add(new Node("Tennis Courts", 200, 160, true));
+        nodes.add(new Node("Basketball Courts", 200, 310, true));
         nodes.add(new Node("Portola Road Entrance", 350, 750, true));
         nodes.add(new Node("ARC", 760, 312, true));
         nodes.add(new Node("Student Center", 790, 330, true));
         nodes.add(new Node("Dining Hall", 790, 270, true));
-        nodes.add(new Node("Gym", 120, 530, true));
-        nodes.add(new Node("Gym", 120, 530, true));
-        nodes.add(new Node("Pool", 190, 500, true));
-        nodes.add(new Node("Locker Rooms", 190, 580, true));
-        nodes.add(new Node("Kovacs Field", 480, 750, true));
+        nodes.add(new Node("Fitness Room", 140, 447, true));
+        nodes.add(new Node("Gym", 155, 570, true));
+        nodes.add(new Node("Pool", 205, 470, true));
+        nodes.add(new Node("Locker Rooms", 200, 580, true));
         nodes.add(new Node("Father Christopher Field/Track", 800, 750, true));
-        nodes.add(new Node("Founders Hall", 505, 560, true));
+        nodes.add(new Node("Founders Hall", 545, 588, true));
         nodes.add(new Node("PA1 Theater", 390, 500, true));
-        nodes.add(new Node("PA2 Black Box", 375, 580, true));
-        nodes.add(new Node("PA3 Orchestra", 375, 650, true));
-        nodes.add(new Node("PA4 Choir", 440, 640, true));
+        nodes.add(new Node("PA2 Black Box", 378, 570, true));
+        nodes.add(new Node("PA3 Orchestra", 385, 645, true));
+        nodes.add(new Node("PA4 Choir", 515, 630, true));
+        nodes.add(new Node("Senior Parking", 480, 715, true));
+        nodes.add(new Node("Kovacs Field", 480, 750, true));
         nodes.add(new Node("Nurse's Office/Health Center", 1065, 550, true));
         nodes.add(new Node("Boys Dorm", 1000, 505, true));
         nodes.add(new Node("Girls Dorm", 1000, 390, true));
         nodes.add(new Node("Guest House", 1000, 6000, true));
         nodes.add(new Node("Chapel", 500, 400, true));
         nodes.add(new Node("Monastery", 440, 125, true));
-        nodes.add(new Node("Faculty Housing", 30, 480, true));
+        nodes.add(new Node("Faculty Housing", 50, 400, true));
         nodes.add(new Node("Franklin Garden", 800, 30, true));
-        nodes.add(new Node("Fitness Room", 130, 440, true));
 
         nodes.add(new Node("B1", 610, 595, true));
         nodes.add(new Node("B2", 636, 589, true));
@@ -299,7 +299,6 @@ public class GraphVisualizer extends JPanel {
         nodes.add(new Node("S201", 790, 125, true));
 
         nodes.add(new Node("Junior Parking", 580, 65, true));
-        nodes.add(new Node("Senior Parking", 480, 715, true));
 
         nodes.add(new Node("Church Square", 992, 187, false));
         nodes.add(new Node("Schilling Square", 682, 436, false));
@@ -314,6 +313,7 @@ public class GraphVisualizer extends JPanel {
         nodes.add(new Node("ITN-dirtroad", 380, 380, false));
 
     }
+
 
 
     private void setupEdges() {
