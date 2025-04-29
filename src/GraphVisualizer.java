@@ -173,13 +173,14 @@ public class GraphVisualizer extends JPanel {
     }
 
     private void setupNodes() {
-        nodes.add(new Node("Kalman Field", 50, 120, true));
-        nodes.add(new Node("Tennis Courts", 150, 120, true));
-        nodes.add(new Node("Basketball Courts", 140, 360, true));
+        nodes.add(new Node("Kalman Field", 50, 180, true));
+        nodes.add(new Node("Tennis Courts", 150, 180, true));
+        nodes.add(new Node("Basketball Courts", 140, 310, true));
         nodes.add(new Node("Portola Road Entrance", 350, 750, true));
         nodes.add(new Node("ARC", 760, 312, true));
         nodes.add(new Node("Student Center", 790, 330, true));
         nodes.add(new Node("Dining Hall", 790, 270, true));
+        nodes.add(new Node("Gym", 120, 530, true));
         nodes.add(new Node("Gym", 120, 530, true));
         nodes.add(new Node("Pool", 190, 500, true));
         nodes.add(new Node("Locker Rooms", 190, 580, true));
@@ -190,7 +191,7 @@ public class GraphVisualizer extends JPanel {
         nodes.add(new Node("PA2 Black Box", 375, 580, true));
         nodes.add(new Node("PA3 Orchestra", 375, 650, true));
         nodes.add(new Node("PA4 Choir", 440, 640, true));
-        nodes.add(new Node("Nurse's Office/Health Center", 1070, 550, true));
+        nodes.add(new Node("Nurse's Office/Health Center", 1065, 550, true));
         nodes.add(new Node("Boys Dorm", 1000, 505, true));
         nodes.add(new Node("Girls Dorm", 1000, 390, true));
         nodes.add(new Node("Guest House", 1000, 6000, true));
@@ -265,9 +266,11 @@ public class GraphVisualizer extends JPanel {
         nodes.add(new Node("Maker Court", 650, 135, false));
         nodes.add(new Node("Breezeway", 725, 550, false));
         nodes.add(new Node("Fr.Egon Plaza", 440, 580, false));
+        nodes.add(new Node("Gym Parking", 280, 540, false));
 
         nodes.add(new Node("ITN-Dine-MS", 653, 560, false));
         nodes.add(new Node("ITN-SRM-MS", 653, 560, false));
+        nodes.add(new Node("ITN-dirtroad", 380, 380, false));
 
     }
 
@@ -329,6 +332,7 @@ public class GraphVisualizer extends JPanel {
         addEdgeByNames("Maker Court", "S203", 17.24);
         addEdgeByNames("Maker Court", "S106", 7.4);
         addEdgeByNames("Junior Parking", "S106", 17.17);
+        addEdgeByNames("Junior Parking", "Monastery", 50);
         addEdgeByNames("S202", "S203", 12.3);
         addEdgeByNames("S202", "S201", 7.75);
         addEdgeByNames("S201", "S101", 14.08);
@@ -374,6 +378,34 @@ public class GraphVisualizer extends JPanel {
         addEdgeByNames("PA4 Choir", "PA3 Orchestra", 6.2);
         addEdgeByNames("PA2 Black Box", "PA3 Orchestra", 7.13);
         addEdgeByNames("PA2 Black Box", "PA1 Theater", 9.67);
+        addEdgeByNames("PA2 Black Box", "PA4 Choir", 8.03);
+
+        addEdgeByNames("ITN-dirtroad", "Dining Hall", 100.75);
+        addEdgeByNames("ITN-dirtroad", "Gym Parking", 40);
+        addEdgeByNames("ITN-dirtroad", "Tennis Courts", 80.84);
+        addEdgeByNames("Kalman Field", "Tennis Courts", 50);
+        addEdgeByNames("Basketball Courts", "Tennis Courts", 50);
+        addEdgeByNames("Kalman Field", "Basketball Courts", 11.27);
+        addEdgeByNames("Fitness Room", "Basketball Courts", 15.49);
+        addEdgeByNames("Fitness Room", "Pool", 2);
+        addEdgeByNames("Fitness Room", "Gym", 2);
+        addEdgeByNames("Gym", "Pool", 25.59);
+        addEdgeByNames("Gym", "Faculty Housing", 40);
+        addEdgeByNames("Gym", "Locker Rooms", 27.60);
+        addEdgeByNames("Gym Parking", "Locker Rooms", 16.75);
+        addEdgeByNames("Gym Parking", "Pool", 11.95);
+        addEdgeByNames("Gym Parking", "PA1 Theater", 32.86);
+        addEdgeByNames("Gym Parking", "PA3 Orchestra", 30);
+        addEdgeByNames("Locker Rooms", "PA3 Orchestra", 43.4);
+
+        addEdgeByNames("Nurse's Office/Health Center", "B13", 72.19);
+        addEdgeByNames("Nurse's Office/Health Center", "Boys Dorm", 45.96);
+        addEdgeByNames("B13", "Boys Dorm", 40);
+        addEdgeByNames("Girls Dorm", "Boys Dorm", 35.54);
+        addEdgeByNames("Girls Dorm", "Student Center", 27.59);
+
+        addEdgeByNames("Franklin Garden", "C4", 70);
+
 
     }
 
