@@ -27,6 +27,9 @@ public class GraphVisualizer extends JPanel {
 
     private final CArrayList<Node> clickedNodes       = new CArrayList<>();
     private final CArrayList<JCheckBox> backpackBoxes  = new CArrayList<>();
+    private JLabel clickedHeader;
+    private JButton resetButton;
+
     private CArrayList<Node> pathNodes                 = new CArrayList<>();
     private CArrayList<CampusNavigator.Position> lastFullPath;
 
@@ -35,6 +38,8 @@ public class GraphVisualizer extends JPanel {
     private final JTextArea actionsDisplay;
 
     private BufferedImage backgroundImage;
+
+
 
 
     public GraphVisualizer() {
@@ -46,6 +51,21 @@ public class GraphVisualizer extends JPanel {
 
         clickedNodesPanel = new JPanel();
         clickedNodesPanel.setLayout(new BoxLayout(clickedNodesPanel, BoxLayout.Y_AXIS));
+
+        clickedHeader = new JLabel("Clicked Nodes (Backpack needed?)");
+        clickedHeader.setAlignmentX(Component.LEFT_ALIGNMENT);
+        clickedNodesPanel.add(clickedHeader);
+
+        resetButton = new JButton("Reset Clicked Nodes");
+        resetButton.setAlignmentX(Component.LEFT_ALIGNMENT);
+        resetButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                resetSelection();
+                repaint();
+            }
+        });
+        clickedNodesPanel.add(resetButton);
+
         actionsDisplay = new JTextArea();
         actionsDisplay.setEditable(false);
 
@@ -173,8 +193,14 @@ public class GraphVisualizer extends JPanel {
         clickedNodes.clear();
         backpackBoxes.clear();
         pathNodes.clear();
-        clickedNodesPanel.removeAll();
         actionsDisplay.setText("");
+        lastFullPath = null;
+
+        Component[] comps = clickedNodesPanel.getComponents();
+        for (int i = comps.length - 1; i >= 2; i--) {
+            clickedNodesPanel.remove(i);
+        }
+
         clickedNodesPanel.revalidate();
         clickedNodesPanel.repaint();
     }
