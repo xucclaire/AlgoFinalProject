@@ -2,8 +2,8 @@ import java.util.List;
 
 public class CampusNavigator{
 
-    private AdjacencyListGraph graph;
-    private double backpackMultiplier;
+    private final AdjacencyListGraph graph;
+    private final double backpackMultiplier;
 
     public CampusNavigator(AdjacencyListGraph graph, double carryingFactor) {
         this.graph = graph;

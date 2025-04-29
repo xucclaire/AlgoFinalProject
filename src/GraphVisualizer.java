@@ -99,11 +99,7 @@ public class GraphVisualizer extends JPanel {
         for (int i = 0; i < clickedNodes.size(); i++) {
             Node n = clickedNodes.get(i);
             boolean needBackpack;
-            if (backpackBoxes.get(i).isSelected()) {
-                needBackpack = true;
-            } else {
-                needBackpack = false;
-            }
+            needBackpack = backpackBoxes.get(i).isSelected();
             scheduleEntries.add(new ScheduleEntry(getNodeIndex(n), needBackpack));
         }
 
@@ -340,34 +336,35 @@ public class GraphVisualizer extends JPanel {
         addEdgeByNames("S102/S103", "S104", 5);
         addEdgeByNames("S101", "Dining Hall", 22.75);
 
-        /*
-        addEdgeByNames("ITN-Dine-MS", "Dining Hall", 22.75);
-        addEdgeByNames("ITN-Dine-MS", "ITN-SRM-MS", 22.75);
-        addEdgeByNames("ITN-Dine-MS", "C1", 22.75);
-        addEdgeByNames("ITN-Dine-MS", "C7", 22.75);
-        addEdgeByNames("ITN-Dine-MS", "Church Square", 22.75);
 
-        addEdgeByNames("S101", "ITN-SRM-MS", 22.75);
-        addEdgeByNames("C4", "ITN-SRM-MS", 22.75);
-        addEdgeByNames("C4", "C5", 22.75);
-        addEdgeByNames("C6", "C5", 22.75);
-        addEdgeByNames("C6", "C3", 22.75);
-        addEdgeByNames("C2", "C3", 22.75);
-        addEdgeByNames("C2", "C1", 22.75);
-        addEdgeByNames("C2", "C7", 22.75);
-        addEdgeByNames("C8", "C7", 22.75);
-        addEdgeByNames("C8", "C9", 22.75);
-        addEdgeByNames("C10", "C9", 22.75);
-        addEdgeByNames("C10", "C11", 22.75);
-        addEdgeByNames("C12", "C11", 22.75);
+        addEdgeByNames("ITN-Dine-MS", "Dining Hall", 25.77);
+        addEdgeByNames("ITN-Dine-MS", "ITN-SRM-MS", 11.65);
+        addEdgeByNames("ITN-Dine-MS", "C1", 12.5);
+        addEdgeByNames("ITN-Dine-MS", "C2", 14.38);
+        addEdgeByNames("ITN-Dine-MS", "C7", 9.36);
+        addEdgeByNames("ITN-Dine-MS", "Church Square", 18.44);
 
-        addEdgeByNames("C10", "Church Square", 22.75);
-        addEdgeByNames("C3", "Church Square", 22.75);
-        addEdgeByNames("C8", "Church Square", 22.75);
+        addEdgeByNames("S101", "ITN-SRM-MS", 20.32);
+        addEdgeByNames("C4", "ITN-SRM-MS", 10.83);
+        addEdgeByNames("C4", "C5", 5.31);
+        addEdgeByNames("C6", "C5", 15.67);
+        addEdgeByNames("C6", "C3", 25.47);
+        addEdgeByNames("C2", "C3", 11.47);
+        addEdgeByNames("C2", "C1", 3);
+        addEdgeByNames("C2", "C7", 6.2);
 
+        addEdgeByNames("C8", "C7", 2.63);
+        addEdgeByNames("C8", "C9", 5.7);
+        addEdgeByNames("C10", "C9", 4.13);
+        addEdgeByNames("C10", "C11", 5.93);
+        addEdgeByNames("C12", "C11", 4.11);
 
+        addEdgeByNames("C10", "Church Square", 10.38);
+        addEdgeByNames("C3", "Church Square", 15.58);
+        addEdgeByNames("C8", "Church Square", 9.58);
+        addEdgeByNames("C1", "Church Square", 11);
+        addEdgeByNames("ITN-Dine-MS", "Church Square", 9.55);
 
-*/
         addEdgeByNames("B1", "Founders Hall", 28.28);
         addEdgeByNames("Fr.Egon Plaza", "Founders Hall", 8);
         addEdgeByNames("Fr.Egon Plaza", "Schilling Square", 55.77);
@@ -380,10 +377,6 @@ public class GraphVisualizer extends JPanel {
 
     }
 
-    /**
-     * Find the index of a node given its name.
-     * @return index in nodes[], or –1 if not found.
-     */
     private int findNodeIndexByName(String name) {
         for (int i = 0; i < nodes.size(); i++) {
             if (nodes.get(i).name.equals(name)) {
@@ -393,9 +386,6 @@ public class GraphVisualizer extends JPanel {
         return -1;
     }
 
-    /**
-     * Conveniently add an undirected edge by referring to node names.
-     */
     private void addEdgeByNames(String name1, String name2, double weight) {
         int index1 = findNodeIndexByName(name1);
         int index2 = findNodeIndexByName(name2);

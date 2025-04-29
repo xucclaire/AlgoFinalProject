@@ -3,7 +3,7 @@ import java.util.NoSuchElementException;
 
 public class SinglyLinkedList<E> implements Iterable<E> {
     class Node {
-        private E item;
+        private final E item;
         private Node next;
 
         public Node(E item) {

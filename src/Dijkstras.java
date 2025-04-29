@@ -1,10 +1,10 @@
 public class Dijkstras {
-    private AdjacencyListGraph graph;
-    private int v;
-    private double[] distTo;
-    private int[] edgeTo;
-    private boolean[] visited;
-    private PriorityQueue<Edge> pq;
+    private final AdjacencyListGraph graph;
+    private final int v;
+    private final double[] distTo;
+    private final int[] edgeTo;
+    private final boolean[] visited;
+    private final PriorityQueue<Edge> pq;
 
 
     public Dijkstras(AdjacencyListGraph graph) {

@@ -34,9 +34,7 @@ public class CArrayList<E> {
     }
     private void arrayCapacityChange(int newCapacity) {
         E[] newArray = (E[]) new Object[newCapacity];
-        for (int i = 0; i < size; i++) {
-            newArray[i] = array[i];
-        }
+        if (size >= 0) System.arraycopy(array, 0, newArray, 0, size);
         array = newArray;
     }
 
@@ -52,7 +50,7 @@ public class CArrayList<E> {
         if (index < 0 || index >= size) {
             throw new IndexOutOfBoundsException("Index " + index + " out of bounds.");
         }
-        return (E) array[index];
+        return array[index];
     }
 
     public void removeIndex(int index) {
@@ -85,9 +83,7 @@ public class CArrayList<E> {
 
     public E[] toArray() {
         E[] returnArray = (E[]) new Object[size];
-        for (int i = 0; i < size; i++) {
-            returnArray[i] = array[i];
-        }
+        System.arraycopy(array, 0, returnArray, 0, size);
         return returnArray;
     }
 

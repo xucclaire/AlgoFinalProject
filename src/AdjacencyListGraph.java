@@ -1,7 +1,7 @@
 public class AdjacencyListGraph implements Graph {
-    private SinglyLinkedList<Edge>[] adjacencyList;
-    private int vertices;
-    private boolean isDirected;
+    private final SinglyLinkedList<Edge>[] adjacencyList;
+    private final int vertices;
+    private final boolean isDirected;
 
 
     public AdjacencyListGraph(int vertices, boolean isDirected) {
