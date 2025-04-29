@@ -450,7 +450,6 @@ public class GraphVisualizer extends JPanel {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
 
-        // 0) Background image
         if (backgroundImage != null) {
             g2.drawImage(
                     backgroundImage,
@@ -460,7 +459,6 @@ public class GraphVisualizer extends JPanel {
             );
         }
 
-        // 1) Legend
         g2.setColor(Color.RED);
         g2.drawLine(20, 20, 60, 20);
         g2.drawString("with backpack", 70, 25);
@@ -469,7 +467,6 @@ public class GraphVisualizer extends JPanel {
         g2.drawLine(20, 40, 60, 40);
         g2.drawString("no backpack", 70, 45);
 
-        // 2) Draw all nodes
         for (int i = 0; i < nodes.size(); i++) {
             Node n = nodes.get(i);
             if (!n.visible) {
@@ -487,16 +484,13 @@ public class GraphVisualizer extends JPanel {
             }
         }
 
-        // 3) Draw path segments + arrowheads + step numbers
         if (lastFullPath != null && lastFullPath.size() >= 2) {
-            // segments & arrows
             for (int i = 0; i < lastFullPath.size() - 1; i++) {
                 CampusNavigator.Position p     = lastFullPath.get(i);
                 CampusNavigator.Position nextP = lastFullPath.get(i + 1);
                 Node a = nodes.get(p.vertex);
                 Node b = nodes.get(nextP.vertex);
 
-                // choose color
                 if (p.carrying) {
                     g2.setColor(Color.RED);
                 } else {
@@ -504,7 +498,6 @@ public class GraphVisualizer extends JPanel {
                 }
                 g2.drawLine(a.x, a.y, b.x, b.y);
 
-                // arrowhead
                 double dx = b.x - a.x, dy = b.y - a.y;
                 double len = Math.hypot(dx, dy);
                 double ux = dx / len, uy = dy / len;
@@ -525,17 +518,14 @@ public class GraphVisualizer extends JPanel {
                 g2.fillPolygon(xs, ys, 3);
             }
 
-            // step-numbers
             g2.setFont(g2.getFont().deriveFont(Font.BOLD, 12f));
             for (int i = 0; i < lastFullPath.size(); i++) {
                 Node n = nodes.get(lastFullPath.get(i).vertex);
                 String num = Integer.toString(i + 1);
 
-                // white circle
                 g2.setColor(Color.WHITE);
                 g2.fillOval(n.x - 6, n.y - 6, 12, 12);
 
-                // black text
                 g2.setColor(Color.BLACK);
                 g2.drawString(num, n.x - 3, n.y + 4);
             }
