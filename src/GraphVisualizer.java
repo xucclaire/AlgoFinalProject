@@ -1,6 +1,10 @@
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
 public class GraphVisualizer extends JPanel {
     static class Node {
@@ -30,7 +34,16 @@ public class GraphVisualizer extends JPanel {
     public  final JScrollPane clickedScrollPane;
     private final JTextArea actionsDisplay;
 
+    private BufferedImage backgroundImage;
+
+
     public GraphVisualizer() {
+        try {
+            backgroundImage = ImageIO.read(new File("campusmap.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         clickedNodesPanel = new JPanel();
         clickedNodesPanel.setLayout(new BoxLayout(clickedNodesPanel, BoxLayout.Y_AXIS));
         actionsDisplay = new JTextArea();
@@ -45,6 +58,7 @@ public class GraphVisualizer extends JPanel {
         right.add(actions, BorderLayout.SOUTH);
         clickedScrollPane = new JScrollPane(right);
         clickedScrollPane.setPreferredSize(new Dimension(300, 770));
+
 
         setupNodes();
         graph     = new AdjacencyListGraph(nodes.size(), false);
@@ -259,6 +273,7 @@ public class GraphVisualizer extends JPanel {
         nodes.add(new Node("S201", 790, 125, true));
 
         nodes.add(new Node("Junior Parking", 580, 65, true));
+        nodes.add(new Node("Senior Parking", 480, 715, true));
 
         nodes.add(new Node("Church Square", 992, 187, false));
         nodes.add(new Node("Schilling Square", 682, 436, false));
@@ -407,6 +422,9 @@ public class GraphVisualizer extends JPanel {
         addEdgeByNames("Franklin Garden", "C4", 70);
 
 
+        addEdgeByNames("Franklin Garden", "C4", 70);
+
+
     }
 
     private int findNodeIndexByName(String name) {
@@ -432,6 +450,17 @@ public class GraphVisualizer extends JPanel {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
 
+        // 0) Background image
+        if (backgroundImage != null) {
+            g2.drawImage(
+                    backgroundImage,
+                    0, 0,
+                    getWidth(), getHeight(),
+                    null
+            );
+        }
+
+        // 1) Legend
         g2.setColor(Color.RED);
         g2.drawLine(20, 20, 60, 20);
         g2.drawString("with backpack", 70, 25);
@@ -440,9 +469,12 @@ public class GraphVisualizer extends JPanel {
         g2.drawLine(20, 40, 60, 40);
         g2.drawString("no backpack", 70, 45);
 
+        // 2) Draw all nodes
         for (int i = 0; i < nodes.size(); i++) {
             Node n = nodes.get(i);
-            if (!n.visible) continue;
+            if (!n.visible) {
+                continue;
+            }
             g2.setColor(Color.BLUE);
             g2.fillOval(n.x - 10, n.y - 10, 20, 20);
             g2.setColor(Color.BLACK);
@@ -455,14 +487,16 @@ public class GraphVisualizer extends JPanel {
             }
         }
 
+        // 3) Draw path segments + arrowheads + step numbers
         if (lastFullPath != null && lastFullPath.size() >= 2) {
+            // segments & arrows
             for (int i = 0; i < lastFullPath.size() - 1; i++) {
                 CampusNavigator.Position p     = lastFullPath.get(i);
                 CampusNavigator.Position nextP = lastFullPath.get(i + 1);
                 Node a = nodes.get(p.vertex);
                 Node b = nodes.get(nextP.vertex);
 
-                // choose red/orange
+                // choose color
                 if (p.carrying) {
                     g2.setColor(Color.RED);
                 } else {
@@ -470,23 +504,38 @@ public class GraphVisualizer extends JPanel {
                 }
                 g2.drawLine(a.x, a.y, b.x, b.y);
 
+                // arrowhead
                 double dx = b.x - a.x, dy = b.y - a.y;
                 double len = Math.hypot(dx, dy);
                 double ux = dx / len, uy = dy / len;
                 int mx = (int)(a.x + ux * len * 0.8);
                 int my = (int)(a.y + uy * len * 0.8);
                 int px = (int)(-uy * 5), py = (int)(ux * 5);
-                int[] xs = { mx, mx - (int)(ux*10) + px, mx - (int)(ux*10) - px };
-                int[] ys = { my, my - (int)(uy*10) + py, my - (int)(uy*10) - py };
+
+                int[] xs = {
+                        mx,
+                        mx - (int)(ux * 10) + px,
+                        mx - (int)(ux * 10) - px
+                };
+                int[] ys = {
+                        my,
+                        my - (int)(uy * 10) + py,
+                        my - (int)(uy * 10) - py
+                };
                 g2.fillPolygon(xs, ys, 3);
             }
 
+            // step-numbers
             g2.setFont(g2.getFont().deriveFont(Font.BOLD, 12f));
             for (int i = 0; i < lastFullPath.size(); i++) {
                 Node n = nodes.get(lastFullPath.get(i).vertex);
                 String num = Integer.toString(i + 1);
+
+                // white circle
                 g2.setColor(Color.WHITE);
                 g2.fillOval(n.x - 6, n.y - 6, 12, 12);
+
+                // black text
                 g2.setColor(Color.BLACK);
                 g2.drawString(num, n.x - 3, n.y + 4);
             }
