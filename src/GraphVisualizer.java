@@ -44,7 +44,7 @@ public class GraphVisualizer extends JPanel {
 
     public GraphVisualizer() {
         try {
-            backgroundImage = ImageIO.read(new File("campusmap.png"));
+            backgroundImage = ImageIO.read(new File("src/campusmap.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
