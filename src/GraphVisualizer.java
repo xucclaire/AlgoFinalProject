@@ -354,8 +354,8 @@ public class GraphVisualizer extends JPanel {
         addEdgeByNames("C2", "C7", 6.2);
 
         addEdgeByNames("C8", "C7", 2.63);
-        addEdgeByNames("C8", "C9", 5.7);
-        addEdgeByNames("C10", "C9", 4.13);
+        addEdgeByNames("C8", "C9/ Learning Commons", 5.7);
+        addEdgeByNames("C10", "C9/ Learning Commons", 4.13);
         addEdgeByNames("C10", "C11", 5.93);
         addEdgeByNames("C12", "C11", 4.11);
 
